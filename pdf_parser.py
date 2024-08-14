@@ -71,9 +71,17 @@ def get_purchase_details(pdf_document, page_num, identifier, delimiter):
     if purchase_order_index is not None:
         purchase_order = split_text[purchase_order_index]
         purchase_order_value = purchase_order[delimiter:]
-        return purchase_order_value
+        return purchase_order_index, purchase_order_value
     else:
         return None
+
+
+def get_purchase_order_date(pdf_document, page_num, date_index):
+    page = pdf_document.load_page(page_num)
+    text = page.get_text("text")
+    split_text = text.split("\n")
+    parsed_date = split_text[date_index]
+    return parsed_date[:10]
 
 
 def get_page_purchase_order_details(pdf_document):
@@ -81,12 +89,12 @@ def get_page_purchase_order_details(pdf_document):
     purchase_order_dates = []
     vendor_numbers = []
     for page_num in range(len(pdf_document)):
-        purchase_order = get_purchase_details(pdf_document, page_num, "P.O. #", 7)
+        purchase_order_index, purchase_order = get_purchase_details(pdf_document, page_num, "BYU-", 4)
         purchase_orders.append(purchase_order)
-        purchase_order_date = get_purchase_details(pdf_document, page_num, "P.O. Date", 10)
+        purchase_order_date = get_purchase_order_date(pdf_document, page_num, purchase_order_index + 1)
         purchase_order_dates.append(purchase_order_date)
-        vendor_number = get_purchase_details(pdf_document, page_num, "Vendor #:", 10)
-        vendor_numbers.append(vendor_number)
+        vendor_number = get_purchase_details(pdf_document, page_num, "Supplier:", 10)
+        vendor_numbers.append(vendor_number[1])
     return [purchase_orders, purchase_order_dates, vendor_numbers]
 
 
@@ -94,7 +102,7 @@ def export_to_excel(purchase_order_dates, purchase_orders, vendor_numbers):
     data = {
         'Date': purchase_order_dates,
         'Purchase Order': purchase_orders,
-        'Vendor Number': vendor_numbers
+        'Supplier Number': vendor_numbers
     }
 
     # Create DataFrame
