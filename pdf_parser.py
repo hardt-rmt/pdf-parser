@@ -9,35 +9,35 @@ def split_pdf(input_pdf, output_dir):
     purchase_orders = purchase_order_details[0]
     purchase_order_dates = purchase_order_details[1]
     vendor_numbers = purchase_order_details[2]
-    start_page = None
+    count = 0
 
     # Loop through each page and save it as a separate PDF
     for i in range(1, len(purchase_orders)):
         current_pdf = purchase_orders[i]
         previous_pdf = purchase_orders[i-1]
 
-        if current_pdf is None:
-            if previous_pdf is not None:
-                start_page = i - 1
-                continue
-            else:
-                if i == len(purchase_orders) - 1:
-                    end_page = i
-                    create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[start_page])
-                    break
-                else:
-                    continue
+        if current_pdf == previous_pdf:
+            count += 1
+            continue
         else:
-            if previous_pdf is not None:
-                start_page = i - 1
+            if count > 1:
+                start_page = i - count - 1
                 end_page = i - 1
+                count = 0
                 create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[start_page])
                 continue
             else:
+                start_page = i - 1
                 end_page = i - 1
+                count = 0
                 create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[start_page])
+                continue
 
-    if purchase_orders[len(purchase_orders) - 1] is not None:
+    if count > 1:
+        start_page = len(purchase_orders) - 1 - count
+        end_page = len(purchase_orders) - 1
+        create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[start_page])
+    else:
         start_page = len(purchase_orders) - 1
         end_page = len(purchase_orders) - 1
         create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[len(purchase_orders)-1])
