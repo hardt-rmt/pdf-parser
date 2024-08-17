@@ -3,7 +3,7 @@ import pandas as pd
 
 
 def split_pdf(input_pdf, output_dir):
-    # Open the input PDF
+    # Open the input PDF document
     pdf_document = pymupdf.open(input_pdf)
     purchase_order_details = get_page_purchase_order_details(pdf_document)
     purchase_orders = purchase_order_details[0]
