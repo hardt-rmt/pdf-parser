@@ -4,13 +4,15 @@ import pandas as pd
 
 def split_pdf(input_pdf, output_dir):
     # Open the input PDF document
-    pdf_document = pymupdf.open(input_pdf)
+    print("Parsing the document...")
+    pdf_document = pymupdf.open(f"input/{input_pdf}")
     purchase_order_details = get_page_purchase_order_details(pdf_document)
     purchase_orders = purchase_order_details[0]
     purchase_order_dates = purchase_order_details[1]
     vendor_numbers = purchase_order_details[2]
     count = 0
 
+    print("Splitting the pdf file into the ", output_dir, " folder...")
     # Loop through each page and save it as a separate PDF
     for i in range(1, len(purchase_orders)):
         current_pdf = purchase_orders[i]
@@ -20,7 +22,7 @@ def split_pdf(input_pdf, output_dir):
             count += 1
             continue
         else:
-            if count > 1:
+            if count > 0:
                 start_page = i - count - 1
                 end_page = i - 1
                 count = 0
@@ -43,6 +45,7 @@ def split_pdf(input_pdf, output_dir):
         create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[len(purchase_orders)-1])
 
     pdf_document.close()
+    print("The document has been successfully split into individual files based on their purchase order numbers.")
     export_to_excel(purchase_order_dates, purchase_orders, vendor_numbers)
 
 
@@ -59,21 +62,18 @@ def create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchas
 
 def get_purchase_details(pdf_document, page_num, identifier, delimiter):
     page = pdf_document.load_page(page_num)
-    purchase_order_index = None
+    potential_indices = []
     text = page.get_text("text")
     split_text = text.split("\n")
+
     for index, item in enumerate(split_text):
         if item.startswith(identifier):
-            purchase_order_index = index
-            break
-        else:
-            continue
-    if purchase_order_index is not None:
-        purchase_order = split_text[purchase_order_index]
-        purchase_order_value = purchase_order[delimiter:]
-        return purchase_order_index, purchase_order_value
-    else:
-        return None
+            potential_indices.append(index)
+
+    purchase_order_index = potential_indices[len(potential_indices) - 1]
+    purchase_order = split_text[purchase_order_index]
+    purchase_order_value = purchase_order[delimiter:]
+    return purchase_order_index, purchase_order_value
 
 
 def get_purchase_order_date(pdf_document, page_num, date_index):
@@ -111,10 +111,9 @@ def export_to_excel(purchase_order_dates, purchase_orders, vendor_numbers):
     # Export DataFrame to Excel file
     df.to_excel('purchase-order-details.xlsx', index=False)
 
-    print("Data has been exported to purchase-order-details.xlsx")
+    print("Data has been exported to the purchase-order-details.xlsx file")
 
 
 # Example usage
-pdf = input("Enter PDF file path: ")
-output_directory = input("Enter output directory: ")
-split_pdf(pdf, output_directory)
+pdf = input("Enter document name: ")
+split_pdf(pdf, "output")
