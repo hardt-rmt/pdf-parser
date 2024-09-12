@@ -2,17 +2,17 @@ import pymupdf
 import pandas as pd
 
 
-def split_pdf(input_pdf, output_dir):
+def split_pdf(input_pdf, output_directory):
     # Open the input PDF document
     print("Parsing the document...")
-    pdf_document = pymupdf.open(f"input/{input_pdf}")
+    pdf_document = pymupdf.open(input_pdf)
     purchase_order_details = get_page_purchase_order_details(pdf_document)
     purchase_orders = purchase_order_details[0]
     purchase_order_dates = purchase_order_details[1]
     vendor_numbers = purchase_order_details[2]
     count = 0
 
-    print("Splitting the pdf file into the ", output_dir, " folder...")
+    print("Splitting the pdf file into the ", output_directory, " folder...")
     # Loop through each page and save it as a separate PDF
     for i in range(1, len(purchase_orders)):
         current_pdf = purchase_orders[i]
@@ -26,36 +26,36 @@ def split_pdf(input_pdf, output_dir):
                 start_page = i - count - 1
                 end_page = i - 1
                 count = 0
-                create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[start_page])
+                create_sing_page_pdf(pdf_document, start_page, end_page, output_directory, purchase_orders[start_page])
                 continue
             else:
                 start_page = i - 1
                 end_page = i - 1
                 count = 0
-                create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[start_page])
+                create_sing_page_pdf(pdf_document, start_page, end_page, output_directory, purchase_orders[start_page])
                 continue
 
     if count > 1:
         start_page = len(purchase_orders) - 1 - count
         end_page = len(purchase_orders) - 1
-        create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[start_page])
+        create_sing_page_pdf(pdf_document, start_page, end_page, output_directory, purchase_orders[start_page])
     else:
         start_page = len(purchase_orders) - 1
         end_page = len(purchase_orders) - 1
-        create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_orders[len(purchase_orders)-1])
+        create_sing_page_pdf(pdf_document, start_page, end_page, output_directory, purchase_orders[len(purchase_orders)-1])
 
     pdf_document.close()
     print("The document has been successfully split into individual files based on their purchase order numbers.")
     export_to_excel(purchase_order_dates, purchase_orders, vendor_numbers)
 
 
-def create_sing_page_pdf(pdf_document, start_page, end_page, output_dir, purchase_order):
+def create_sing_page_pdf(pdf_document, start_page, end_page, output_directory, purchase_order):
     # Create a new PDF with the single page
     single_page_pdf = pymupdf.open()
     single_page_pdf.insert_pdf(pdf_document, from_page=start_page, to_page=end_page)
 
     # Save the single page PDF to the specified directory
-    output_path = f"{output_dir}/{purchase_order}.pdf"
+    output_path = f"{output_directory}/{purchase_order}.pdf"
     single_page_pdf.save(output_path)
     single_page_pdf.close()
 
@@ -114,6 +114,6 @@ def export_to_excel(purchase_order_dates, purchase_orders, vendor_numbers):
     print("Data has been exported to the purchase-order-details.xlsx file")
 
 
-# Example usage
-pdf = input("Enter document name: ")
-split_pdf(pdf, "output")
+pdf_path = input("Enter the file path: ")
+output_dir = input("Enter the output directory: ")
+split_pdf(pdf_path, output_dir)

@@ -1,8 +1,0 @@
-PDF_Parser Program
-
-Action items:
-- Parse a PDF
-- Split it into individual pages
-- Name each PDF according to its P.O. # number
-- Export the PO number, Vendor number, and Purchase date to an excel file
-
